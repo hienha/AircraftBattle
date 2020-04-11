@@ -1,5 +1,11 @@
 * Aircraft Battle
   
+** Requirements
+
+   #+BEGIN_SRC python
+     pip install pygame==1.9.6
+   #+END_SRC
+
 ** 游戏的基本设定
 
 - 敌方共有 大中小 3 款飞机，分为高中低三种速度
