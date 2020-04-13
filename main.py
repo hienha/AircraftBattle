@@ -145,15 +145,17 @@ def main():
                     screen.blit(each.image2, each.rect)
 
                 # 距离屏幕50像素，播放大型敌机音效
-                if each.rect.bottom > -50:
+                if each.rect.bottom == -50:
                     enemy3_fly_sound.play()
             else:
                 # Destroy
-                enemy3_down_sound.play()
                 if not (delay % 3):
+                    if e3_destroy_index == 0:
+                        enemy3_down_sound.play()
                     screen.blit(each.destroy_images[e3_destroy_index], each.rect)
                     e3_destroy_index = (e3_destroy_index + 1) % 6
                     if e3_destroy_index == 0:
+                        enemy3_down_sound.stop()
                         each.reset()
 
 
@@ -163,8 +165,9 @@ def main():
                 each.move()
                 screen.blit(each.image, each.rect)
             else:
-                enemy2_down_sound.play()
                 if not (delay % 3):
+                    if e2_destroy_index == 0:
+                        enemy2_down_sound.play()
                     screen.blit(each.destroy_images[e2_destroy_index], each.rect)
                     e2_destroy_index = (e2_destroy_index + 1) % 4
                     if e2_destroy_index == 0:
@@ -176,15 +179,21 @@ def main():
                 each.move()
                 screen.blit(each.image, each.rect)
             else:
-                enemy1_down_sound.play()
                 if not (delay % 3):
+                    if e1_destroy_index == 0:
+                        enemy1_down_sound.play()
                     screen.blit(each.destroy_images[e1_destroy_index], each.rect)
                     e1_destroy_index = (e1_destroy_index + 1) % 4
                     if e1_destroy_index == 0:
                         each.reset()
 
-        # 检测我文买是否被撞
-        pygame.sprite.spritecollide(mp, enemies, False)
+        # 检测我文飞机是否被撞
+        enemies_down = pygame.sprite.spritecollide(mp, enemies, False, pygame.sprite.collide_mask)
+        if enemies_down:
+            mp.alive = False
+            for e in enemies:
+                e.alive = False
+
         # 绘制我方飞机
         switch_image = not switch_image
         if mp.alive:
@@ -193,12 +202,16 @@ def main():
             else:
                 screen.blit(mp.image2, mp.rect)
         else:
-            me_down_sound.play()
+            if mp_destroy_index == 0:
+                me_down_sound.play()
             if not (delay % 3):
                 screen.blit(each.destroy_images[mp_destroy_index], mp.rect)
                 mp_destroy_index = (mp_destroy_index + 1) % 4
                 if mp_destroy_index == 0:
-                    mp.reset()
+                    # mp.reset()
+                    mp.alive = True
+                    print("Game Over...")
+                    # running = False
 
         # 切换图片
         if not (delay % 5):
