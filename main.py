@@ -23,38 +23,26 @@ background = pygame.image.load("images/background.png").convert()
 # Load Musics
 pygame.mixer.music.load("sound/game_music.ogg")
 pygame.mixer.music.set_volume(0.2)
-
 bullet_sound = pygame.mixer.Sound("sound/bullet.wav")
 bullet_sound.set_volume(0.2)
-
 bomb_sound = pygame.mixer.Sound("sound/use_bomb.wav")
 bomb_sound.set_volume(0.2)
-
 supply_sound = pygame.mixer.Sound("sound/supply.wav")
 supply_sound.set_volume(0.2)
-
 get_bomb_sound = pygame.mixer.Sound("sound/get_bomb.wav")
 get_bomb_sound.set_volume(0.2)
-
 get_bullet_sound = pygame.mixer.Sound("sound/get_bullet.wav")
 get_bullet_sound.set_volume(0.2)
-
 upgrade_sound = pygame.mixer.Sound("sound/upgrade.wav")
 upgrade_sound.set_volume(0.2)
-
 enemy3_fly_sound = pygame.mixer.Sound("sound/enemy3_flying.wav")
 enemy3_fly_sound.set_volume(0.2)
-
 enemy1_down_sound = pygame.mixer.Sound("sound/enemy1_down.wav")
 enemy1_down_sound.set_volume(0.2)
-
 enemy2_down_sound = pygame.mixer.Sound("sound/enemy2_down.wav")
 enemy2_down_sound.set_volume(0.2)
-
 enemy3_down_sound = pygame.mixer.Sound("sound/enemy1_down.wav")
 enemy3_down_sound.set_volume(0.2)
-
-
 me_down_sound = pygame.mixer.Sound("sound/me_down.wav")
 me_down_sound.set_volume(0.2)
 
@@ -171,6 +159,7 @@ def main():
                     screen.blit(each.destroy_images[e2_destroy_index], each.rect)
                     e2_destroy_index = (e2_destroy_index + 1) % 4
                     if e2_destroy_index == 0:
+                        enemy2_down_sound.stop()
                         each.reset()
 
         # 绘制小型敌机
@@ -185,13 +174,14 @@ def main():
                     screen.blit(each.destroy_images[e1_destroy_index], each.rect)
                     e1_destroy_index = (e1_destroy_index + 1) % 4
                     if e1_destroy_index == 0:
+                        enemy1_down_sound.stop()
                         each.reset()
 
         # 检测我文飞机是否被撞
         enemies_down = pygame.sprite.spritecollide(mp, enemies, False, pygame.sprite.collide_mask)
         if enemies_down:
             mp.alive = False
-            for e in enemies:
+            for e in enemies_down:
                 e.alive = False
 
         # 绘制我方飞机
@@ -208,6 +198,7 @@ def main():
                 screen.blit(each.destroy_images[mp_destroy_index], mp.rect)
                 mp_destroy_index = (mp_destroy_index + 1) % 4
                 if mp_destroy_index == 0:
+                    me_down_sound.stop()
                     # mp.reset()
                     mp.alive = True
                     print("Game Over...")
