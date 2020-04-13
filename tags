@@ -1,0 +1,28 @@
+BigEnemy	enemy.py	/^class BigEnemy(/
+MidEnemy	enemy.py	/^class MidEnemy(/
+MyPlane	myplane.py	/^class MyPlane(/
+SmallEnemy	enemy.py	/^class SmallEnemy(/
+__init__	enemy.py	/^    def __init__(/
+__init__	enemy.py	/^    def __init__(/
+__init__	enemy.py	/^    def __init__(/
+__init__	myplane.py	/^    def __init__(/
+add_big_enemies	main.py	/^def add_big_enemies(/
+add_mid_enemies	main.py	/^def add_mid_enemies(/
+add_small_enemies	main.py	/^def add_small_enemies(/
+enemy	enemy.py	1
+main	main.py	/^def main(/
+main	main.py	1
+main	ptags.py	/^def main(/
+move	enemy.py	/^    def move(/
+move	enemy.py	/^    def move(/
+move	enemy.py	/^    def move(/
+moveDown	myplane.py	/^    def moveDown(/
+moveLeft	myplane.py	/^    def moveLeft(/
+moveRight	myplane.py	/^    def moveRight(/
+moveUp	myplane.py	/^    def moveUp(/
+myplane	myplane.py	1
+ptags	ptags.py	1
+reset	enemy.py	/^    def reset(/
+reset	enemy.py	/^    def reset(/
+reset	enemy.py	/^    def reset(/
+treat_file	ptags.py	/^def treat_file(/
