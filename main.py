@@ -1,24 +1,29 @@
 #!/usr/bin/ven python3
 
+""" Main Framework """
+
 import sys
 import traceback
 
 import pygame
+from pygame.locals import *
 
 import myplane
 import bullet
 import enemy
 # import supply
 
-from pygame.locals import *
-
 pygame.init()
 pygame.mixer.init()
 
-bg_size = width, height = 480, 700
-screen = pygame.display.set_mode(bg_size)
+BG_SIZE = width, height = 480, 700
+screen = pygame.display.set_mode(BG_SIZE)
 pygame.display.set_caption("Aircraft Battle -- Vincent")
 background = pygame.image.load("images/background.png").convert()
+
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 
 # Load Musics
 pygame.mixer.music.load("sound/game_music.ogg")
@@ -49,19 +54,19 @@ me_down_sound.set_volume(0.2)
 
 def add_small_enemies(group1, group2, nums):
     for i in range(nums):
-        es = enemy.SmallEnemy(bg_size)
+        es = enemy.SmallEnemy(BG_SIZE)
         group1.add(es)
         group2.add(es)
 
 def add_mid_enemies(group1, group2, nums):
     for i in range(nums):
-        em = enemy.MidEnemy(bg_size)
+        em = enemy.MidEnemy(BG_SIZE)
         group1.add(em)
         group2.add(em)
 
 def add_big_enemies(group1, group2, nums):
     for i in range(nums):
-        eb = enemy.BigEnemy(bg_size)
+        eb = enemy.BigEnemy(BG_SIZE)
         group1.add(eb)
         group2.add(eb)
 
@@ -70,7 +75,7 @@ def main():
     pygame.mixer.music.play(-1)
 
     # 生成我方飞机
-    mp = myplane.MyPlane(bg_size)
+    mp = myplane.MyPlane(BG_SIZE)
 
     # 生成敌方飞机
     enemies = pygame.sprite.Group()
@@ -144,16 +149,42 @@ def main():
                 if hit_enemies:
                     b1.artive = False
                     for he in hit_enemies:
-                        he.alive = False
+                        if he in mid_enemies or he in big_enemies:
+                            he.hit = True
+                            he.energy -= 1
+
+                            if he.energy == 0:
+                                he.alive = False
+                        else:
+                            he.alive = False
 
         # 绘制大型敌机
         for each in big_enemies:
             if each.alive:
                 each.move()
-                if switch_image:
-                    screen.blit(each.image1, each.rect)
+
+                if each.hit:
+                    # 绘制被击中的图片
+                    screen.blit(each.image_hit, each.rect)
+                    each.hit = False
                 else:
-                    screen.blit(each.image2, each.rect)
+                    if switch_image:
+                        screen.blit(each.image1, each.rect)
+                    else:
+                        screen.blit(each.image2, each.rect)
+
+                # 绘制血槽
+                pygame.draw.line(screen, BLACK, (each.rect.left, each.rect.top -5), (each.rect.right, each.rect.top - 5), 2)
+
+                # 当生命值大于 20% 时显示为红色，否则显示为红色
+                energy_remain = each.energy / enemy.BigEnemy.energy
+                if energy_remain > 0.2:
+                    energy_color = GREEN
+                else:
+                    energy_color = RED
+                pygame.draw.line(screen, energy_color,
+                                 (each.rect.left, each.rect.top -5),
+                                 (each.rect.left + each.rect.width * energy_remain, each.rect.top -5), 2)
 
                 # 距离屏幕50像素，播放大型敌机音效
                 if each.rect.bottom == -50:
@@ -174,7 +205,26 @@ def main():
         for each in mid_enemies:
             if each.alive:
                 each.move()
-                screen.blit(each.image, each.rect)
+
+                if each.hit:
+                    # 绘制被击中的图片
+                    screen.blit(each.image_hit, each.rect)
+                    each.hit = False
+                else:
+                    screen.blit(each.image, each.rect)
+
+                # 绘制血槽
+                pygame.draw.line(screen, BLACK, (each.rect.left, each.rect.top -5), (each.rect.right, each.rect.top - 5), 2)
+
+                # 当生命值大于 20% 时显示为红色，否则显示为红色
+                energy_remain = each.energy / enemy.MidEnemy.energy
+                if energy_remain > 0.2:
+                    energy_color = GREEN
+                else:
+                    energy_color = RED
+                pygame.draw.line(screen, energy_color,
+                                 (each.rect.left, each.rect.top -5),
+                                 (each.rect.left + each.rect.width * energy_remain, each.rect.top -5), 2)
             else:
                 if not (delay % 3):
                     if e2_destroy_index == 0:
