@@ -6,7 +6,7 @@ import traceback
 import pygame
 
 import myplane
-# import bullet
+import bullet
 import enemy
 # import supply
 
@@ -87,6 +87,12 @@ def main():
     big_enemies = pygame.sprite.Group()
     add_big_enemies(big_enemies, enemies, 2)
 
+    # 生成普通子弹
+    bullet1 = []
+    bullet1_index = 0
+    BULLET1_NUMS = 4
+    [bullet1.append(bullet.Bullet1(mp.rect.midtop)) for b in range(BULLET1_NUMS)]
+
     clock = pygame.time.Clock()
 
     # 中弹图片索引
@@ -122,6 +128,23 @@ def main():
             mp.moveRight()
 
         screen.blit(background, (0,0))
+
+        # 发射子弹
+        if not (delay % 10):
+            bullet1[bullet1_index].reset(mp.rect.midtop)
+            bullet1_index = (bullet1_index + 1) % BULLET1_NUMS
+
+        # 检测子弹是否击中敌机
+        for b1 in bullet1:
+            if b1.active:
+                b1.move()
+                screen.blit(b1.image, b1.rect)
+                hit_enemies = pygame.sprite.spritecollide(b1, enemies, False, pygame.sprite.collide_mask)
+
+                if hit_enemies:
+                    b1.artive = False
+                    for he in hit_enemies:
+                        he.alive = False
 
         # 绘制大型敌机
         for each in big_enemies:
