@@ -124,6 +124,12 @@ def main():
     # 设置难度级别
     level = 1
 
+    # 设置全屏炸弹
+    bomb_image = pygame.image.load("images/bomb.png").convert_alpha()
+    bomb_rect = bomb_image.get_rect()
+    bomb_font = pygame.font.Font("font/font.ttf", 48)
+    bomb_nums = 3
+
     # 中弹图片索引
     e1_destroy_index = 0
     e2_destroy_index = 0
@@ -157,6 +163,14 @@ def main():
                         paused_image = resume_nor_image
                     else:
                         paused_image = pause_nor_image
+            elif event.type == KEYDOWN:
+                if event.key == K_SPACE:
+                    if bomb_nums:
+                        bomb_nums -= 1
+                        bomb_sound.play()
+                        for each in enemies:
+                            if each.rect.bottom > 0:
+                                each.alive = False
 
 
         # 根据用户的得分增加游戏难度
@@ -361,6 +375,13 @@ def main():
                         print("Game Over...")
                         # running = False
 
+            # 绘制全屏炸弹数量
+            bomb_text = bomb_font.render("x %d" % bomb_nums, True, WHITE)
+            text_rect = bomb_text.get_rect()
+            screen.blit(bomb_image, (10, height - 10 - bomb_rect.height))
+            screen.blit(bomb_text, (20 + bomb_rect.width, height - 5 - text_rect.height))
+
+        # 绘制得分
         score_text = score_font.render("Score : %s" % str(score), True, WHITE)
         screen.blit(score_text, (10, 2))
 
