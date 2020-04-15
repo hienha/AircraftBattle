@@ -151,6 +151,9 @@ def main():
     # 标是否使用超级子弹
     is_double_bullet = False
 
+    # 复活后无敌状态（3秒）
+    INVINCIBLE_TIME = USEREVENT + 2
+
     # 生命数量
     life_image = pygame.image.load("images/life.png").convert_alpha()
     life_rect = life_image.get_rect()
@@ -215,6 +218,9 @@ def main():
             elif event.type == DOUBLE_BULLET_TIME:
                 is_double_bullet = False
                 pygame.time.set_timer(DOUBLE_BULLET_TIME, 0)
+            elif event.type == INVINCIBLE_TIME:
+                mp.invincible = False
+                pygame.time.set_timer(INVINCIBLE_TIME, 0)
 
         # 根据用户的得分增加游戏难度
         if level == 1 and score > 50000:
@@ -422,7 +428,7 @@ def main():
 
             # 检测我文飞机是否被撞
             enemies_down = pygame.sprite.spritecollide(mp, enemies, False, pygame.sprite.collide_mask)
-            if enemies_down:
+            if enemies_down and not mp.invincible:
                 mp.alive = False
                 for e in enemies_down:
                     e.alive = False
@@ -435,15 +441,17 @@ def main():
                 else:
                     screen.blit(mp.image2, mp.rect)
             else:
-                if mp_destroy_index == 0:
-                    me_down_sound.play()
                 if not (delay % 3):
-                    screen.blit(each.destroy_images[mp_destroy_index], mp.rect)
+                    if mp_destroy_index == 0:
+                        me_down_sound.play()
+                    screen.blit(mp.destroy_images[mp_destroy_index], mp.rect)
                     mp_destroy_index = (mp_destroy_index + 1) % 4
                     if mp_destroy_index == 0:
                         me_down_sound.stop()
                         life_num -= 1
                         mp.reset()
+                        pygame.time.set_timer(INVINCIBLE_TIME, 3 * 1000)
+                        # running = False
 
             # 绘制全屏炸弹数量
             bomb_text = bomb_font.render("x %d" % bomb_nums, True, WHITE)
