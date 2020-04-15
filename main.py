@@ -151,6 +151,11 @@ def main():
     # 标是否使用超级子弹
     is_double_bullet = False
 
+    # 生命数量
+    life_image = pygame.image.load("images/life.png").convert_alpha()
+    life_rect = life_image.get_rect()
+    life_num = 3
+
     # 中弹图片索引
     e1_destroy_index = 0
     e2_destroy_index = 0
@@ -254,7 +259,7 @@ def main():
 
         screen.blit(background, (0,0))
 
-        if not paused:
+        if life_num and not paused:
             # 检测用户键盘操作
             key_pressed = pygame.key.get_pressed()
 
@@ -437,16 +442,23 @@ def main():
                     mp_destroy_index = (mp_destroy_index + 1) % 4
                     if mp_destroy_index == 0:
                         me_down_sound.stop()
-                        # mp.reset()
-                        mp.alive = True
-                        print("Game Over...")
-                        # running = False
+                        life_num -= 1
+                        mp.reset()
 
             # 绘制全屏炸弹数量
             bomb_text = bomb_font.render("x %d" % bomb_nums, True, WHITE)
             text_rect = bomb_text.get_rect()
             screen.blit(bomb_image, (10, height - 10 - bomb_rect.height))
             screen.blit(bomb_text, (20 + bomb_rect.width, height - 5 - text_rect.height))
+
+            # 绘制剩余生命数量
+            if life_num:
+                for i in range(life_num):
+                    screen.blit(life_image, (width - 10 - (i+1) * life_rect.width, height - 10 - life_rect.height))
+        # 绘制游结束
+        elif life_num == 0:
+            print("Game over!!!")
+
 
         # 绘制得分
         score_text = score_font.render("Score : %s" % str(score), True, WHITE)
