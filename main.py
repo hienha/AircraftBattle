@@ -4,6 +4,7 @@
 
 import sys
 import traceback
+import random
 
 import pygame
 from pygame.locals import *
@@ -11,7 +12,7 @@ from pygame.locals import *
 import myplane
 import bullet
 import enemy
-# import supply
+import supply
 
 pygame.init()
 pygame.mixer.init()
@@ -106,6 +107,14 @@ def main():
 
     clock = pygame.time.Clock()
 
+    # 生超级通子弹
+    bullet2 = []
+    bullet2_index = 0
+    BULLET2_NUMS = 8
+    for i in range(BULLET2_NUMS // 2):
+        bullet2.append(bullet.Bullet2([(mp.rect.centerx - 33), mp.rect.centery]))
+        bullet2.append(bullet.Bullet2([(mp.rect.centerx + 30), mp.rect.centery]))
+
     # 用户得分
     score = 0
     score_font = pygame.font.Font("font/font.ttf", 30)
@@ -130,6 +139,18 @@ def main():
     bomb_font = pygame.font.Font("font/font.ttf", 48)
     bomb_nums = 3
 
+    # 每 30 秒发放一个补给包
+    bullet_supply = supply.Bullet_Supply(BG_SIZE)
+    bomb_supply = supply.Bomb_Supply(BG_SIZE)
+    SUPPLY_TIME = USEREVENT
+    pygame.time.set_timer(SUPPLY_TIME, 10 * 1000)
+
+    # 超级子弹定时器
+    DOUBLE_BULLET_TIME = USEREVENT + 1
+
+    # 标是否使用超级子弹
+    is_double_bullet = False
+
     # 中弹图片索引
     e1_destroy_index = 0
     e2_destroy_index = 0
@@ -152,6 +173,15 @@ def main():
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1 and pause_rect.collidepoint(event.pos):
                     paused = not paused
+                    if paused:
+                        pygame.time.set_timer(SUPPLY_TIME, 0)
+                        pygame.mixer.music.pause()
+                        pygame.mixer.pause()
+                    else:
+                        pygame.time.set_timer(SUPPLY_TIME, 30 * 1000)
+                        pygame.mixer.music.unpause()
+                        pygame.mixer.unpause()
+
             elif event.type == MOUSEMOTION:
                 if pause_rect.collidepoint(event.pos):
                     if paused:
@@ -171,7 +201,15 @@ def main():
                         for each in enemies:
                             if each.rect.bottom > 0:
                                 each.alive = False
-
+            elif event.type == SUPPLY_TIME:
+                supply_sound.play()
+                if random.choice([True, False]):
+                    bomb_supply.reset()
+                else:
+                    bullet_supply.reset()
+            elif event.type == DOUBLE_BULLET_TIME:
+                is_double_bullet = False
+                pygame.time.set_timer(DOUBLE_BULLET_TIME, 0)
 
         # 根据用户的得分增加游戏难度
         if level == 1 and score > 50000:
@@ -229,13 +267,42 @@ def main():
             if key_pressed[K_d] or key_pressed[K_RIGHT]:
                 mp.moveRight()
 
+            # 绘制 全屏炸弹补给并检测是否获得
+            if bomb_supply.active:
+                bomb_supply.move()
+                screen.blit(bomb_supply.image, bomb_supply.rect)
+                if pygame.sprite.collide_mask(bomb_supply, mp):
+                    get_bomb_sound.play()
+                    if bomb_nums < 3:
+                        bomb_nums += 1
+                    bomb_supply.active = False
+
+            # 绘制 超级子弹 补给是否获得
+            if bullet_supply.active:
+                bullet_supply.move()
+                screen.blit(bullet_supply.image, bullet_supply.rect)
+                if pygame.sprite.collide_mask(bullet_supply, mp):
+                    get_bullet_sound.play()
+                    # 发射超级子弹
+                    is_double_bullet = True
+                    pygame.time.set_timer(DOUBLE_BULLET_TIME, 18 * 1000)
+                    bullet_supply.active = False
+
             # 发射子弹
             if not (delay % 10):
-                bullet1[bullet1_index].reset(mp.rect.midtop)
-                bullet1_index = (bullet1_index + 1) % BULLET1_NUMS
+                bullet_sound.play()
+                if not is_double_bullet:
+                    bullets = bullet1
+                    bullets[bullet1_index].reset(mp.rect.midtop)
+                    bullet1_index = (bullet1_index + 1) % BULLET1_NUMS
+                else:
+                    bullets = bullet2
+                    bullets[bullet2_index].reset([(mp.rect.centerx - 33), mp.rect.centery])
+                    bullets[bullet2_index + 1].reset([(mp.rect.centerx + 30), mp.rect.centery])
+                    bullet2_index = (bullet2_index + 2) % BULLET2_NUMS
 
             # 检测子弹是否击中敌机
-            for b1 in bullet1:
+            for b1 in bullets:
                 if b1.active:
                     b1.move()
                     screen.blit(b1.image, b1.rect)
