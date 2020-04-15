@@ -159,6 +159,16 @@ def main():
     life_rect = life_image.get_rect()
     life_num = 3
 
+    # 用于阻止打开文档存档
+    recording = False
+
+    # 游戏结束画面
+    gameover_font = pygame.font.Font("font/font.ttf", 48)
+    again_image = pygame.image.load("images/again.png").convert_alpha()
+    again_rect = again_image.get_rect()
+    gameover_image = pygame.image.load("images/gameover.png").convert_alpha()
+    gameover_rect = gameover_image.get_rect()
+
     # 中弹图片索引
     e1_destroy_index = 0
     e2_destroy_index = 0
@@ -463,14 +473,69 @@ def main():
             if life_num:
                 for i in range(life_num):
                     screen.blit(life_image, (width - 10 - (i+1) * life_rect.width, height - 10 - life_rect.height))
-        # 绘制游结束
+
+            # 绘制得分
+            score_text = score_font.render("Score : %s" % str(score), True, WHITE)
+            screen.blit(score_text, (10, 2))
+
+        # 绘制游戏结束画面
         elif life_num == 0:
-            print("Game over!!!")
+            # 背影音乐停止
+            pygame.mixer.music.stop()
 
+            # 停止全部音效
+            pygame.mixer.stop()
 
-        # 绘制得分
-        score_text = score_font.render("Score : %s" % str(score), True, WHITE)
-        screen.blit(score_text, (10, 2))
+            pygame.time.set_timer(SUPPLY_TIME, 0)
+
+            if not recording:
+                recording = True
+                # 读取历史最高得分
+                record_file = "./record.log"
+                import os
+                if not os.path.exists(record_file):
+                    with open(record_file, "w") as f:
+                        f.write(str(score))
+                else:
+                    with open(record_file) as f:
+                        record_score = int(f.read())
+                    if record_score < score:
+                        with open(record_file, "w") as f:
+                            f.write(str(score))
+
+            # 绘制结束画面
+            record_score_text = score_font.render("Best : %d" % record_score, True, (255, 255, 255))
+            screen.blit(record_score_text, (50,50))
+
+            gameover_text1 = gameover_font.render("Your Score", True, (255, 255, 255))
+            gameover_text1_rect = gameover_text1.get_rect()
+            gameover_text1_rect.left, gameover_text1_rect.top =  (width - gameover_text1_rect.width) // 2, height // 3
+            screen.blit(gameover_text1, gameover_text1_rect)
+
+            gameover_text2 = gameover_font.render(str(score), True, (255, 255, 255))
+            gameover_text2_rect = gameover_text2.get_rect()
+            gameover_text2_rect.left, gameover_text2_rect.top = (width - gameover_text2_rect.width) // 2, gameover_text1_rect.bottom + 10
+            screen.blit(gameover_text2, gameover_text2_rect)
+
+            again_rect.left, again_rect.top = (width - again_rect.width) // 2, gameover_text2_rect.bottom + 50
+            screen.blit(again_image, again_rect)
+
+            gameover_rect.left, gameover_rect.top = (width - again_rect.width) // 2, again_rect.bottom + 10
+            screen.blit(gameover_image, gameover_rect)
+
+            # 检测用户的鼠标操作
+            if pygame.mouse.get_pressed()[0]:
+                # 获取鼠标坐标
+                pos = pygame.mouse.get_pos()
+                # 如果用户点击“重新开始”
+                if again_rect.left < pos[0] < again_rect.right and again_rect.top < pos[1] < again_rect.bottom:
+                    # 调用main函数，重新开始游戏
+                    main()
+                # 如果用户点击“结束游戏”
+                elif gameover_rect.left < pos[0] < gameover_rect.right and gameover_rect.top < pos[1] < gameover_rect.bottom:
+                    # 退出游戏
+                    pygame.quit()
+                    sys.exit()
 
         # 绘制暂停按钮
         screen.blit(paused_image, pause_rect)
